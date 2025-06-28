@@ -43,6 +43,11 @@ export default class MenuItem {
   static async findById(id: number) {
     try {
       const [menuItemRecord] = await db.select().from(menuItem).where(eq(menuItem.id, id)).limit(1);
+      
+      if (!menuItemRecord) {
+        return null;
+      }
+      
       const ingredients = await MenuItemIngredient.findForMenuItemId(id);
       return new MenuItem({
         id: menuItemRecord.id,
@@ -51,6 +56,7 @@ export default class MenuItem {
       })
     } catch(err) {
       console.error(err);
+      return null;
     }
   }
 

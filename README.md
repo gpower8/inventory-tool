@@ -1,78 +1,63 @@
 # Cafe OS
 
-Cafe OS is a new start up app created for managing your own cafe. It includes creating menu items 
-and managing the inventory needed for those menu items.
+A simple CLI for managing a cafe's inventory and orders.
 
-## Getting Started
+## How to Run
 
-### Required
-- node 24
-- pnpm
-- sqlite
+First, install dependencies:
+```bash
+pnpm install
+```
 
-### Database
+Then, set up the database:
+```bash
+pnpm db:migrate
+pnpm data-migrate
+```
 
-In order to start the application, you will need to make sure to have sqlite and make the 
-appropriate migrations. Use `pnpm db:migrate` to migrate the database, then use `pnpm data-migrate` 
-to seed the initial database with data.
+Finally, start the application:
+```bash
+pnpm start
+```
 
-For context, the database library we make use of here is called drizzle. See more information at https://orm.drizzle.team/
+## How to Test
 
-### Starting the Application
+Here are a few simple tests to verify the core functionality.
 
-use `pnpm start` to start the application once the database is situated.
+### Test Inventory Deduction
 
-## Development Guidelines
-Below we layout a few guidelines for the project. Please make sure to read through them completely before starting your project.
+Verifies that ordering deducts ingredients correctly.
 
-__Framework__
+1. Check initial stock:
+   ```bash
+   sqlite3 cafe.db "SELECT name, quantity FROM inventory_items WHERE name = 'Coffee Beans: Espresso Roast';"
+   ```
+   Should show: `1000000`
 
-The Command Line Interface used is `inquirer`, but feel free to bring in any other CLI frameworks you'd like.
+2. Order an Americano: Run `pnpm start` and order an Americano.
 
-__Language__
+3. Verify deduction:
+   ```bash
+   sqlite3 cafe.db "SELECT name, quantity FROM inventory_items WHERE name = 'Coffee Beans: Espresso Roast';"
+   ```
+   Should show: `984000`
 
-Please use Typescript and TSX is used to run the project.
+### Test Out-of-Stock Logic
 
-__Backend__
+Verifies the app prevents orders when ingredients are unavailable.
 
-The Application uses SQLite and you will be expected to develop with that.
+1. Set milk to zero:
+   ```bash
+   sqlite3 cafe.db "UPDATE inventory_items SET quantity = 0 WHERE name = 'Milk';"
+   ```
 
-__Timeboxing__
+2. Run the app: Use `pnpm start`
 
-We know that a product, even as small as this one, can balloon as we think of new ideas and better ways to create the app. We ask that you limit this to no more than 4 hours of total work so that it doesn’t eat into your free time too much and that we have an appropriate baseline to judge it from.
+3. Observe: Items requiring milk show "0 orders possible". Ordering them will fail.
 
-__Testing__
+### Cleanup
 
-Any kind of automated testing is appreciated, though not required given the time limit provided. However, there should be a way we can test the application’s functionality manually at the bare minimum, ideally by running 1 to 3 commands via CLI.
-
-
-### Objectives
-
-This project has two main objectives:
-
-- Demonstrate your product mindset and ability to turn product requirements into a working product
-- Showcase code quality
-
-We will be evaluating based around these objectives and a follow up chat we have with you after the demo project is finished.
-
-#### User Stories
-
-Right now, we only have menu items, their ingredients, and the inventory in our database. Now its 
-time to put these things together to make something a bit more useful.
-
-As someone newly appointed to the scrappy startup, you are charged with building out some core features.
-
-- When a user orders an item, it should deduct from the current inventory
-- When a user orders an item, should check if there is enough inventory to make the item
-- When a user orders an item, and there is not enough inventory, it should inform the user we are out that item
-
-Any features you decide to develop beyond this is up to you! We will not be giving extra 
-consideration for anything outside the original scope.
-
-### I’m done! Now what?
-
-After completion, please send over a link to the git repository of the app and instructions on how to run it locally.
-
-After, we will review the code and let you know next steps.
-
-Happy Coding!
+Restock milk for future tests:
+```bash
+sqlite3 cafe.db "UPDATE inventory_items SET quantity = 10000 WHERE name = 'Milk';"
+```
